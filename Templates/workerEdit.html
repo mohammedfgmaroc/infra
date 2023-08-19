@@ -1,0 +1,48 @@
+
+{% extends 'Dashboard.html' %}
+{% load static %}
+
+{% block title %}
+    
+{% endblock %}
+
+{% block content %}
+<h1>Edit Worker</h1>
+<div>
+    <form method="post" action="{% url 'workers_edit' pk=user.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="edit-username">Username</label>
+            <input type="text" id="edit-username" name="username" class="form-control" value="{{ user.username }}" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-email">Email</label>
+            <input type="email" id="edit-email" name="email" class="form-control" value="{{ user.email }}" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-password">New Password</label>
+            <input type="password" id="edit-password" name="password" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="edit-first-name">First Name</label>
+            <input type="text" id="edit-first-name" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-last-name">Last Name</label>
+            <input type="text" id="edit-last-name" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-role">Role</label>
+            <select id="edit-role" name="role" class="form-control">
+                <option value="Admin" {% if 'Admin' in user.groups.all %}selected{% endif %}>Admin</option>
+                <option value="Technician" {% if 'Technician' in user.groups.all %}selected{% endif %}>Technician</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <a href="{% url 'workers_managment' %}" class="btn btn-default">Cancel</a>
+    </form>
+    
+</div>
+
+{% endblock %}

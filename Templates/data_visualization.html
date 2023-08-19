@@ -1,0 +1,414 @@
+{% extends 'Dashboard.html' %}
+
+{% block title %}
+    Data Visualization
+    
+
+    
+    
+{% endblock %}
+
+{% block content %}
+
+    <!-- Your Data Visualization content here -->
+    <style>
+        .outer-container {
+        display: flex; /* Use flexbox to arrange containers horizontally */
+        }
+
+        .inner-container {
+            border: 1px solid #ffffff;
+            padding: 20px;
+            margin: 10px;
+            flex: 1; /* Distribute available space equally among the containers */
+        }
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f7f7f7;
+        }
+      
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #ffffff;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+          position: relative;
+          
+        }
+      
+        .form-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          margin-bottom: 15px;
+        }
+      
+        .form-col {
+          flex-basis: calc(50% - 20px);
+          margin-bottom: 15px;
+        }
+      
+        .input-text,
+        select {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+      
+        label {
+          display: block;
+          font-weight: bold;
+          margin-bottom: 5px;
+          color: #000000;
+        }
+      
+        .submit-btn {
+          margin-top: 30px;
+          background-color: #5750b9;
+          color: #ffffff;
+          padding: 5px 30px;
+          border: none;
+          border-radius: 5px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+        .submit-btn1 {
+          margin-bottom: 10px;
+          margin-right: 10px;
+          background-color: #007bff;
+          color: #ffffff;
+          padding: 10px 30px;
+          border: none;
+          border-radius: 5px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          position: absolute;
+          bottom: 0;
+          right: 0;
+        }
+      
+        .submit-btn:hover {
+          background-color: #0056b3;
+        }
+    
+        .custom-table thead tr:nth-child(1) {
+            border-top: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            color: #000000; /* Change this to your desired color */
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+
+        }
+        .custom-table th{
+            border-bottom: 2px solid #000000; /* Horizontal borders */
+            border-left: 2px solid #000000; /* Remove left border */
+            border-right: 2px solid #000000; /* Vertical borders */
+            background-color: #a2a2a2;
+        }
+        .custom-table td {
+            border-bottom: 2px solid #000000; /* Horizontal borders */
+            border-left: 2px solid #000000; /* Remove left border */
+            border-right: 2px solid #000000; /* Vertical borders */
+        }
+        .custom-table tbody tr:nth-child(2) th:nth-child(1) {
+            border-bottom: none;
+            border-left: none;
+            background-color: #ffffff;
+        }
+        .custom-table tbody tr:nth-child(2) td:nth-child(4) {
+            border-bottom: none;
+        }
+        .custom-table tbody tr:nth-child(2) td:nth-child(7) {
+            border-right: none;
+            border-bottom: none;
+        }
+        .custom-table tbody tr:nth-child(1) {
+            color: #000000; /* Change this to your desired color */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+        }
+        /* Apply a specific color to the text within the specific cell */
+        .custom-table tbody tr:nth-child(2) td:nth-child(2) {
+            color: #3e47e7; /* Change this to your desired color */
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+        }
+        .custom-table tbody tr:nth-child(2) td:nth-child(3) {
+            color: #45b116; /* Change this to your desired color */
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+        }
+        .custom-table tbody tr:nth-child(2) td:nth-child(5) {
+            color: #eea110; /* Change this to your desired color */
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+        }
+        .custom-table tbody tr:nth-child(2) td:nth-child(6) {
+            color: #ff0000; /* Change this to your desired color */
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+            text-align: center;
+        }
+        .custom-table thead tr:nth-child(1) th:nth-child(4) {
+            background-color: #45b116;
+        }
+        .custom-table tbody tr:nth-child(1) td:nth-child(4) {
+            background-color: #45b116;
+        }
+        .custom-table thead tr:nth-child(1) th:nth-child(7) {
+            background-color: #ff0000;
+        }
+        .custom-table tbody tr:nth-child(1) td:nth-child(7) {
+            background-color: #ff0000;
+        }
+
+        .costum {
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid #000000;
+            margin-left: 90px;
+        }
+
+        .costum th{
+            border: 2px solid #000000;
+            padding: 8px;
+            text-align: center;
+            color: #000000;
+        } 
+        .costum td {
+            border: 2px solid #000000;
+            padding: 8px;
+            text-align: center;
+            color: #000000;
+            font-size: 15px; /* Change to your desired font size */
+            font-weight: bold; /* Apply bold font weight */
+        }
+
+        .costum th {
+            background-color: #a2a2a2;
+        }
+
+        .costum tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+            
+        }
+
+        .costum tbody tr:hover {
+            background-color: #e0e0e0;
+        }
+        .filter-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+            text-align: center;
+            margin-bottom: 20px; /* Add some spacing below the paragraph */
+        }
+        
+        
+      </style>
+
+
+    <div class="outer-container">
+        <div class="inner-container">
+        <!-- Content for the first container -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="bg-light p-3">
+                            <table  class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Catégories</th>
+                                        <th scope="col">A</th>
+                                        <th scope="col">B</th>
+                                        <th scope="col">A+B</th>
+                                        <th scope="col">C</th>
+                                        <th scope="col">D</th>
+                                        <th scope="col">C+D</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">ISU</th>
+                                        
+                                        <td>{{ category_percentage_data.A|floatformat:"1" }}%</td>
+                                        <td>{{ category_percentage_data.B|floatformat:"1" }}%</td>
+                                        <td>{{ category_percentage_data.S1|floatformat:"1" }}%</td>
+                                        <td>{{ category_percentage_data.C|floatformat:"1" }}%</td>
+                                        <td>{{ category_percentage_data.D|floatformat:"1" }}%</td>
+                                        <td>{{ category_percentage_data.S2|floatformat:"1" }}%</td>
+                                        
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"></th>
+                                        <td>Bon</td>
+                                        <td>Moyen</td>
+                                        <td></td>
+                                        <td>Movaise</td>
+                                        <td>Très Movaise</td>
+                                        <td></td>        
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="bg-light p-3">
+                            <table  class="costum">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Longueur RV</th>
+                                        <th scope="col">Longueur totale</th>
+                                        <th scope="col">Larg_CH moyen</th>
+                                        <th scope="col">TMJA moyen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        
+                                        
+                                        <td>{{ longueur_rv }}</td>
+                                        <td>{{ longueur_totale }}</td>
+                                        <td>{{ larg_moy|floatformat:"1" }}</td>
+                                        <td>{{ category_percentage_data.C|floatformat:"1" }}%</td>
+                                        
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>       
+        <div class="inner-container">
+        <!-- Content for the second container -->
+            <div class="container">
+                <form id="form1" method="get" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="year">Année du fichier</label>
+                            <input type="text" id="file" name="selected_filename" list="files" class="input-text" placeholder="Noms des Fichiers">
+                            <datalist id="files">
+                                {% for file in files %}
+                                    <option value="{{ file }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="form-col">
+                            <input type="submit" value="Choisir" class="submit-btn">
+                        </div>
+                    </div>
+                </form>
+
+                <form id="form2" method="get" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-col"> 
+                            <label for="road-select">Choisissez la route:</label>
+                            <input type="text" id="road-select" name="road" list="roads" class="input-text" placeholder="Nom de la route">
+                            <datalist id="roads">
+                                {% for route in routes %}
+                                    <option value="{{ route }}">
+                                {% endfor %}
+                            </datalist>
+                            <label for="category">voie (sens voie express) :</label>
+                            <select id="category" name="category_filter" class="input-text">
+                                <option value="" disabled selected>sens voie express</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            
+                <form id="form3" method="get" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="input1">PKD : </label>
+                            <input type="text" id="input1" name="start_range" class="input-text" title="De {{pkd_min}} Jusqu'au {{pkd_max}}">
+                        </div>
+                        <div class="form-col">
+                            <label for="input2">PKF : </label>
+                            <input type="text" id="input2" name="end_range" class="input-text" title="De {{pkf_min}} Jusqu'au {{pkf_max}}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <input type="submit" value="Appliquer" class="submit-btn1">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="inner-container">
+        <!-- Content for the third container -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="bg-light p-3">
+                            {% if plot_svg %}
+                            {{ plot_svg|safe }}
+                            {% else %}
+                                <p class="filter-message">Sélectionnez un fichier pour avoir votre graphe</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var roadSelect = document.getElementById("road-select");
+            var category = document.getElementById("category");
+            var roadChanged = false;
+            var categoryChanged = false;
+            
+            roadSelect.addEventListener("input", function () {
+                roadChanged = true;
+                trySubmitForm();
+            });
+            
+            category.addEventListener("change", function () {
+                categoryChanged = true;
+                trySubmitForm();
+            });
+            
+            function trySubmitForm() {
+                if (roadChanged && categoryChanged) {
+                    // Submit the form when both elements have been changed
+                    document.getElementById("form2").submit();
+                }
+            }
+        });
+    </script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+

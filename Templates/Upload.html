@@ -1,0 +1,286 @@
+{% extends 'Dashboard.html' %}
+
+{% block title %}
+    Data Visualization
+{% endblock %}
+
+{% block content %}
+
+
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  background-color: #eeeeee;
+}
+
+.file-upload {
+  background-color: #ffffff;
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.file-upload-btn {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  background: #1FB264;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #15824B;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.file-upload-btn:hover {
+  background: #1AA059;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.file-upload-btn:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+.file-upload-content {
+  display: none;
+  text-align: center;
+}
+
+.file-upload-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed #1FB264;
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: #1FB264;
+  border: 4px dashed #ffffff;
+}
+
+.image-title-wrap {
+  padding: 0 15px 15px 15px;
+  color: #222;
+}
+
+.drag-text {
+  text-align: center;
+}
+
+.drag-text h3 {
+  font-weight: 100;
+  text-transform: uppercase;
+  color: #15824B;
+  padding: 60px 0;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: #fff;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #b02818;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.remove-image:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+.custom-form {
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f5f5f5;
+  text-align: center; /* Center its contents horizontally */
+}
+.custom-form .select-sheet {
+  text-align: center; /* Center its contents horizontally */
+  margin-bottom: 20px; /* Add some spacing below the select element */
+}
+.custom-form select {
+  width: 50%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #000000;
+  font-size: 16px;
+}
+
+.custom-form select:hover {
+  border-color: #007bff;
+}
+
+.custom-form select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+.custom-form input[type="submit"] {
+  width: 50%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+.custom-form input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+</style>
+
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+
+<form id="upload-form" method="post" enctype="multipart/form-data" action="{% url 'Upload' %}">
+  {% csrf_token %}
+  <div class="file-upload">
+    <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger('click')">Add Excel</button>
+
+    <div class="image-upload-wrap">
+      <input class="file-upload-input" type="file" name="excel_file" onchange="readFile(this);" accept=".xls, .xlsx" />
+      <div class="drag-text">
+        <h3>Drag and drop a file or select add excel file</h3>
+      </div>
+    </div>
+    <div class="file-upload-content">
+      <img class="file-upload-image" src="../static/images/excel_image.png" alt="Excel Icon" />
+      <div class="image-title-wrap">
+        <button type="button" onclick="removeUpload()" class="remove-image">Remove <span class="image-title">Uploaded Excel</span></button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="custom-form">
+    <div class="select-sheet">
+      <label for="sheet-name"></label>
+      <select id="sheet-name" name="selected_sheet">
+        <option value="" disabled selected>Select a sheet</option>
+        <!-- Options for sheet names will be dynamically added here -->
+      </select>
+    </div>
+    <input type="submit" value="Submit">
+  </div>
+  
+</form>
+
+<script>
+function readFile(input) {
+  const file = input.files[0];
+  const sheetSelect = document.getElementById('sheet-name');
+  const imageUploadWrap = document.querySelector('.image-upload-wrap');
+  const fileUploadContent = document.querySelector('.file-upload-content');
+  const imageTitle = document.querySelector('.image-title');
+
+  // Clear the previous options
+  sheetSelect.innerHTML = '';
+
+  if (file) {
+    if (file.type === "application/vnd.ms-excel" || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      // Display Excel icon and hide the uploaded image
+      imageUploadWrap.style.display = "none";
+      fileUploadContent.style.display = "block";
+      imageTitle.textContent = "Uploaded Excel: " + file.name;
+      
+      // Read sheet names using xlsx library
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+
+        // Populate the sheet select element
+        workbook.SheetNames.forEach(function (sheetName) {
+          const option = document.createElement('option');
+          option.value = sheetName;
+          option.textContent = sheetName;
+          sheetSelect.appendChild(option);
+        });
+      };
+      reader.readAsBinaryString(file);
+
+    }else {
+      // File type is not Excel, show the uploaded image
+      readURL(input);
+      imageTitle.textContent = "Uploaded Image: " + file.name;
+    }
+  }else {
+    // No file selected, hide the uploaded image
+    fileUploadContent.style.display = "none";
+    imageUploadWrap.style.display = "block";
+    imageTitle.textContent = "";
+  }
+}
+
+function readURL(input) {
+  const file = input.files[0];
+  const fileUploadImage = document.querySelector('.file-upload-image');
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      fileUploadImage.src = e.target.result;
+      fileUploadContent.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // No file selected, hide the uploaded image
+    fileUploadContent.style.display = "none";
+  }
+}
+
+function removeUpload() {
+  const imageUploadWrap = document.querySelector('.image-upload-wrap');
+  const fileUploadContent = document.querySelector('.file-upload-content');
+
+  $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+  fileUploadContent.style.display = "none";
+  imageUploadWrap.style.display = "block";
+  imageTitle.textContent = "";
+}
+</script>
+
+{% endblock %}
