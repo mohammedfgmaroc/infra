@@ -1,0 +1,238 @@
+{% block title %}
+    
+    
+
+{% endblock %}
+
+{% block content %}
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        
+        /* Define the layout styles */
+        h1 {
+            font-size: 24px;
+            color: #000000;
+            margin-bottom: 50px;
+            margin-top: 50px;
+            text-align: center;
+        }
+        .horizontal-container {
+            display: flex;
+            width: 100%;
+            height: auto;
+        }
+        .horizontal-scroll-container {
+            width: 100%;
+            overflow-x: scroll; /* Enable horizontal scrolling */
+            white-space: nowrap; /* Prevent wrapping of content */
+            background-color: #f0f0f0;
+        }
+
+        .scroll-item {
+            display: inline-block; /* Display items in a row */
+            width: 300px; /* Set the width of each item */
+            height: auto;
+            background-color: #ddd;
+            margin: 10px; /* Add spacing between items */
+        }
+
+        .vertical-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Add some styling to make it visually clear */
+        .horizontal-container {
+            background-color: #f0f0f0;
+        }
+
+        .vertical-container {
+            margin: 10px;
+            padding: 10px;
+            width: auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .custom {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        .custom th, .custom td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .custom th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .custom tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .custom tr:hover {
+            background-color: #e0e0e0;
+        }
+
+        #print-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        #print-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center; /* Center icon vertically */
+            border-radius: 5px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+        
+        /* Add more styling as needed */
+
+    </style>
+    <div id="print-button-container" class="no-print">
+        <button id="print-button"><i class="fas fa-print"> Imprimer</i></button>
+    </div>
+    <h1>Rapport d'un filtre appliqué sur le fichier : </br></br>" {{filename}} " par {{username}}</h1>
+    <div class="horizontal-container">
+        <!-- First vertical container -->
+        <div class="vertical-container">
+            <table class="custom">
+                <thead>
+                    <tr>
+                        <th>HIST</th>
+                        <th>REVET</th>
+                        <th>PKD</th>
+                        <th>PKF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in grouped_historical_data %}
+                    <tr>
+                        <td>{{ group.hist }}</td>
+                        <td>{{ group.revet }}</td>
+                        <td>{{ group.first_pkd }}</td>
+                        <td>{{ group.last_pkf }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Second vertical container divided into two -->
+        <div class="vertical-container">
+            <!-- First sub-container -->
+            <div class="vertical-container">
+                <table  class="custom">
+                    <thead>
+                        <tr>
+                            <th scope="col">Catégories</th>
+                            <th scope="col">A</th>
+                            <th scope="col">B</th>
+                            <th scope="col">A+B</th>
+                            <th scope="col">C</th>
+                            <th scope="col">D</th>
+                            <th scope="col">C+D</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">ISU</th>
+                            
+                            <td>{{ category_percentage_data.A|floatformat:"1" }}%</td>
+                            <td>{{ category_percentage_data.B|floatformat:"1" }}%</td>
+                            <td>{{ category_percentage_data.S1|floatformat:"1" }}%</td>
+                            <td>{{ category_percentage_data.C|floatformat:"1" }}%</td>
+                            <td>{{ category_percentage_data.D|floatformat:"1" }}%</td>
+                            <td>{{ category_percentage_data.S2|floatformat:"1" }}%</td>
+                            
+                        </tr>
+                        <tr>
+                            <th scope="row"></th>
+                            <td>Bon</td>
+                            <td>Moyen</td>
+                            <td></td>
+                            <td>Movaise</td>
+                            <td>Très Movaise</td>
+                            <td></td>        
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Second sub-container -->
+            <div class="vertical-container">
+                <table  class="custom">
+                    <thead>
+                        <tr>
+                            <th scope="col">Province</th>
+                            <th scope="col">Route</th>
+                            <th scope="col">Sens voie</th>
+                            <th scope="col">PKD</th>
+                            <th scope="col">PKF</th>
+                            <th scope="col">Longueur RV</th>
+                            <th scope="col">Longueur totale</th>
+                            <th scope="col">Larg_CH moyen</th>
+                            <th scope="col">TMJA moyen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        
+
+                            <td>{{ selected_province }}</td>
+                            <td>{{ selected_road }}</td>
+                            <td>{{ selected_category }}</td>
+                            <td>{{ start_range }}</td>
+                            <td>{{ end_range }}</td>
+                            <td>{{ longueur_rv }}</td>
+                            <td>{{ longueur_totale }}</td>
+                            <td>{{ larg_moy|floatformat:"1" }}</td>
+                            <td>{{ tmja_moy|floatformat:"1" }}</td>
+                            
+                            
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="horizontal-scroll-container">
+        <div class="scroll-item">
+            {% if bar_plot_svg %}
+                {{ bar_plot_svg|safe }}
+            {% else %}
+                <p class="filter-message">Sélectionnez un fichier pour avoir votre graphe</p>
+            {% endif %}
+        </div>
+                
+    </div>
+
+    <script>
+        const printButton = document.getElementById("print-button");
+        printButton.addEventListener("click", function () {
+            window.print();
+        });
+    </script>
+
+{% endblock %}

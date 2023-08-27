@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <head>
-    <title>Infra</title>
+    <title>InfraApp</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-   
+    <link rel="icon" href="../static/images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../static/images/favicon.png" type="image/x-icon">
 </head>
 <div class="login-page">
     <div class="form">
@@ -20,7 +21,7 @@
         <input type="password" placeholder="password" name="password"/>
         
         <div class="checkbox">
-          <input type="checkbox" checked="" />
+          <input type="checkbox" name="remember_me" />
           <label>Se souvenir de moi</label>
         </div>
         
@@ -187,8 +188,11 @@ body {
   -moz-osx-font-smoothing: grayscale;      
 }
   </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    $('.message a').click(function(){
-   $('form').animate({height: "toggle", opacity: "toggle"}, "slow");
-});
+    $(document).ready(function() {
+      $('.message a').click(function() {
+          $('form').animate({ height: "toggle", opacity: "toggle" }, "slow");
+      });
+    });
   </script>

@@ -2,10 +2,13 @@
 <!doctype html>
 <html lang="en">
   <head>
-  	<title>Infra</title>
+  	<title>InfraApp</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-   
+    
+    <link rel="icon" href="../static/images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../static/images/favicon.png" type="image/x-icon">
+
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -14,17 +17,80 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 		
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+      .navbar-nav {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-item {
+        margin-left: 20px;
+      }
+
+      .nav-link {
+        display: inline-block;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #8ca3ff;
+        border: none;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+      }
+      /* Sidebar Styles */
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        overflow-y: auto;
+        width: 250px; /* Adjust the width as needed */
+        transition: width 0.3s ease
+      }
+      .nav-link:hover {
+        background-color: #bbeae9;
+        
+      }
+
+      /* Expanded Sidebar Styles */
+      #sidebar.expanded {
+        width: 350px; /* Expanded width */
+      }
+
+      /* Content Styles */
+      #content {
+        margin-left: 100px; /* Initial margin */
+        transition: margin-left 0.3s ease; /* Add smooth transition effect */
+        /* Other styles */
+      }
+
+      /* Adjust content area when sidebar expands */
+      #sidebar.expanded ~ #content {
+        margin-left: 250px; /* Adjusted margin */
+      }
+
+    </style>
   </head>
   <body>
-   
+  <script>
+    $(document).ready(function () {
+      $("#sidebarCollapse").on("click", function () {
+        $("#sidebar").toggleClass("expanded");
+      });
+    });
+
+  </script>
 		
 		<div class="wrapper d-flex align-items-stretch">
 			<nav id="sidebar" class="active">
-				<h1><a href="#" class="logo">In</a></h1>
+				<h1><a href="{% url 'data_visualization' %}" class="logo">In</a></h1>
         <ul class="list-unstyled components mb-5">
           <li class="active">
             <a href="{% url 'data_visualization' %}"><span class="fa  fa-pie-chart"></span> Home</a>
@@ -37,7 +103,7 @@
             <a href="{% url 'Upload' %}"><span class="fa fa-upload"></span> Upload</a>
           </li>
           <li>
-            <a href="#"><span class="fa  fa-check-square-o"></span> Validate</a>
+            <a href="{% url 'validation' %}"><span class="fa  fa-check-square-o"></span> Validate</a>
           </li>
         </ul>
 

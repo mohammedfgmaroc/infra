@@ -1,3 +1,5 @@
+from collections import defaultdict
+from django.utils.datastructures import MultiValueDictKeyError
 from datetime import timedelta
 from django.utils import timezone
 from io import BytesIO
@@ -16,7 +18,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.core.files.storage import FileSystemStorage
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 from django.contrib.sessions.models import Session
 from MainApp.models import UploadedFile
@@ -57,29 +62,35 @@ def data_visualization_view(request):
         df.dropna(subset=['longueur'], inplace=True)
         #Longueur totale
         longueur_totale = df['longueur'].sum()
-        # Remove rows with NaN values in the specific column
-        df.dropna(subset=[isu_column_name], inplace=True)
+    
         #Longueur RV and largeur moyen
         longueur_rv = df['long rv'].sum()
         larg_moy = df['Larg_CH'].mean()
+        tmja_moy = df['TMJA'].mean()
         # Combine values from 'column1' and 'column2' and create a new 'combined_column'
         df['Route'] = df['Categorie'].astype(str) + df['Num_Route'].astype(str)
 
         routes = df['Route'].unique()
-        
+        provinces = df['Province'].unique()
+
+        filtre = False
+
+        province = request.GET.get('province', '')
         road_filter = request.GET.get('road', '')
         category = request.GET.get('category_filter', '')
-        if road_filter and category:
-            session_data = {'selected_category': category, 'road_filter': road_filter}
+        if road_filter and category and province:
+            session_data = {'selected_category': category, 'road_filter': road_filter, 'province': province}
             request.session['session_data'] = session_data
             return redirect('data_visualization')  # Redirect to the same view
     
         stored_session_data = request.session.get('session_data', {})
         selected_category = stored_session_data.get('selected_category', '')
         stored_road_filter = stored_session_data.get('road_filter', '')
+        stored_province_filter = stored_session_data.get('province', '')
         if selected_category and selected_category.strip():
             selected_category_int = int(selected_category)
-            filtered_df = df[(df['Route'] == stored_road_filter) & (df['voie (sens voie express)'] == selected_category_int)]
+            filtered_df = df[(df['Route'] == stored_road_filter) & (df['voie (sens voie express)'] == selected_category_int) & (df['Province'] == stored_province_filter)]
+            filtre = True
         else:
             filtered_df = df
             
@@ -88,11 +99,93 @@ def data_visualization_view(request):
         pkf_min = filtered_df['pkf'].min()
         pkf_max = filtered_df['pkf'].max()
 
-        start_range = float(request.GET.get('start_range', 0))
-        end_range = float(request.GET.get('end_range', float('inf')))
-        # Filter the DataFrame based on the range of numbers and category filter
-        filtered_df = filtered_df[(filtered_df['pkd'] >= start_range) & (filtered_df['pkf'] <= end_range)]
+        start_range_str = request.GET.get('start_range', '')  # Default to empty string if parameter is missing
+        end_range_str = request.GET.get('end_range', '')
 
+        # Check if the strings are not empty before converting to float
+        if start_range_str:
+            start_range = float(start_range_str)
+        else:
+            start_range = 0.0  # Default value when parameter is missing or empty
+
+        if end_range_str:
+            end_range = float(end_range_str)
+        else:
+            end_range = float('inf')  # Default value when parameter is missing or empty
+            
+        if start_range and end_range:
+            pk_session_data = {'start_range': start_range, 'end_range': end_range}
+            request.session['pk_session_data'] = pk_session_data
+        pk_session_data = request.session.get('pk_session_data', {})
+        stored_start_range = pk_session_data.get('start_range', '')
+        stored_end_renge = pk_session_data.get('end_range', '')
+        if selected_category and selected_category.strip() and stored_start_range and stored_end_renge:
+            
+            selected_category_int = int(selected_category)
+            if selected_category_int == 1:
+                if stored_start_range < stored_end_renge:
+                    # Filter the DataFrame based on the range of numbers and category filter
+                    filtered_df = filtered_df[(filtered_df['pkd'] >= stored_start_range) & (filtered_df['pkf'] <= stored_end_renge)]
+                else:
+                    messages.error(request, "Le PKD doit être inférieur au PKF pour le sens 1")
+            elif int(selected_category) == 2:
+                if stored_start_range > stored_end_renge:
+                    # Filter the DataFrame based on the range of numbers and category filter
+                    filtered_df = filtered_df[(filtered_df['pkd'] <= stored_start_range) & (filtered_df['pkf'] >= stored_end_renge)]
+                else:
+                    messages.error(request, "Le PKD doit être supérieur au PKF pour le sens 2")
+        
+        # Create a dictionary to store historical data by year and category
+        grouped_historical_data = None
+        historical_data_by_group = defaultdict(list)
+
+        for index, row in filtered_df.iterrows():
+            history = {
+                'pkd': row['pkd'],
+                'pkf': row['pkf'],
+                'hist': row['HIST'],  
+                'revet': row['REVET']
+            }
+            # Group the historical data by year and category
+            key = (row['HIST'], row['REVET'])
+            historical_data_by_group[key].append(history)
+
+        if selected_category and selected_category.strip():
+            selected_category_int = int(selected_category)
+            if selected_category_int == 1:
+                # Convert the grouped historical data into a list of dictionaries
+                grouped_historical_data = [
+                    {
+                        'hist': key[0],
+                        'revet': key[1],
+                        'first_pkd': group[0]['pkd'],
+                        'last_pkf': group[-1]['pkf']
+                    }
+                    for key, group in historical_data_by_group.items()
+                ]
+            elif int(selected_category) == 2:
+                # Convert the grouped historical data into a list of dictionaries
+                grouped_historical_data = [
+                    {
+                        'hist': key[0],
+                        'revet': key[1],
+                        'first_pkd': group[-1]['pkd'],
+                        'last_pkf': group[0]['pkf']
+                    }
+                    for key, group in historical_data_by_group.items()
+                ]
+            # filtre appliqué avec succès
+            #messages.success(request, 'filtre appliqué avec succès : '+stored_province_filter+'-'+stored_road_filter+'-'+str(selected_category)+'-'+str(stored_start_range)+'-->'+str(stored_end_renge))
+            # Check if a similar success message already exists
+            success_message = 'filtre appliqué avec succès : '+stored_province_filter+'-'+stored_road_filter+'-'+str(selected_category)+'-'+str(stored_start_range)+'-->'+str(stored_end_renge)
+            if success_message not in [str(message) for message in messages.get_messages(request)]:
+                messages.success(request, success_message)
+            longueur_totale = filtered_df['longueur'].sum()
+        
+            #Longueur RV and largeur moyen
+            longueur_rv = filtered_df['long rv'].sum()
+            larg_moy = filtered_df['Larg_CH'].mean()
+            tmja_moy = filtered_df['TMJA'].mean()
         # Calculate the count of each category in the filtered DataFrame
         category_counts = filtered_df[isu_column_name].value_counts()
         # Calculate the percentages for each category
@@ -127,7 +220,7 @@ def data_visualization_view(request):
         
         circle = plt.Circle((0, 0), 0.6, color='white')  # Add a white circle to create the donut effect
         plt.gca().add_artist(circle)
-        plt.title('Category Distribution '+year, loc='left')
+        plt.title('Distribution ISU'+year, loc='left')
         plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular.
         # Add bounding box to labels to prevent overlaps
         plt.legend(labels=labels, loc="lower left", bbox_to_anchor=(0.9, 0.9))
@@ -139,11 +232,75 @@ def data_visualization_view(request):
         plt.savefig(buffer, format='svg') # Save as SVG
         buffer.seek(0)
         plot_svg = buffer.getvalue().decode('utf-8')
-        # Pass the plot, filtered DataFrame, and category counts to the template for rendering
+        
+        # Calculate the number of X-axis values
+        num_x_values = 0
+        if filtered_df['pkf'].any() and filtered_df['pkd'].any():
+            num_x_values = int(max(filtered_df['pkf'])) - int(min(filtered_df['pkd'])) + 1
+
+        if filtre is True:
+            # Calculate a suitable width based on the number of X-axis values
+            max_allowed_width = 65535  # Maximum allowed width
+            min_width_per_x_value = 1  # Adjust this value as needed
+            min_fig_width = num_x_values * min_width_per_x_value
+            fig_width = min(max_allowed_width, max(min_fig_width, 8))  # Set a minimum width of 8 inches
+
+            # Create a figure and axis for the bar plot with the calculated width
+            plt.figure(figsize=(fig_width, 5))  # Adjust the height (6 inches) as needed
+        else:
+            plt.figure(figsize=(8, 5))
+        # Create a figure and axis for the bar plot
+        ax = plt.gca()
+        # Enable grid lines for both X and Y axes
+        ax.grid(True, axis='both', linestyle='--', linewidth=0.5, alpha=0.7)
+        # Define the order of categories
+        category_order = ['A', 'B', 'C', 'D']
+
+        # Calculate a dynamic bar height based on a percentage of the plot height
+        bar_height_percentage = 0.2  # Adjust this value as needed
+        bar_height = bar_height_percentage * (ax.get_ylim()[1] - ax.get_ylim()[0])
+
+        # Loop through each category and create a vertical bar for each corresponding row in filtered_df
+        for category_index, category in enumerate(category_order):
+            category_rows = filtered_df[filtered_df[isu_column_name] == category]
+            for index, row in category_rows.iterrows():
+                x_position = row['pkd']
+                bar_width = row['pkf'] - row['pkd']
+                ax.barh(category_index, bar_width, height=bar_height, left=x_position, color=category_color_map.get(category, 'gray'))
+
+        # Set y-axis ticks and labels
+        ax.set_yticks(np.arange(len(category_order)))
+        ax.set_yticklabels(category_order)
+
+        # Set x-axis ticks
+        x_ticks = 0
+        if filtered_df['pkd'].any() and filtered_df['pkf'].any():
+            x_ticks = np.arange(int(min(filtered_df['pkd'])), int(max(filtered_df['pkf'])) + 1)  # Iterate by 1
+            ax.set_xticks(x_ticks)
+
+        # Customize the plot
+        plt.xlabel('PK Range')
+        plt.ylabel('Category')
+        plt.title('PK Range by Category', loc='left')
+
+        # Invert Y-axis to have A at the top
+        plt.gca().invert_yaxis()
+
+        # Show the plot
+        plt.tight_layout()
+        bar_plot_buffer = BytesIO()
+        plt.savefig(bar_plot_buffer, format='svg')
+        bar_plot_buffer.seek(0)
+        bar_plot_svg = bar_plot_buffer.getvalue().decode('utf-8')
+        
+
         context2 = {
+            'filtre': filtre,
             'files': files,
+            'filename': filename,
             'year': year,
             'plot_svg': plot_svg,
+            'bar_plot_svg': bar_plot_svg,
             'filtered_df': filtered_df,
             'category_counts': category_counts,
             'category_percentage_data': category_percentage_data,
@@ -154,13 +311,27 @@ def data_visualization_view(request):
             'pkf_max': pkf_max,
             'longueur_totale': longueur_totale,
             'longueur_rv': longueur_rv,
-            'larg_moy': larg_moy
+            'larg_moy': larg_moy,
+            'tmja_moy': tmja_moy,
+            'provinces': provinces,
+            'selected_province': stored_province_filter,  # Add selected province value
+            'selected_road': stored_road_filter,          # Add selected road value
+            'selected_category': selected_category,       # Add selected category value
+            'start_range': stored_start_range,                   # Add start range value
+            'end_range': stored_end_renge,                        # Add end range value
+            'grouped_historical_data': grouped_historical_data,
         }
+        if 'print_button' in request.POST:
+           return render(request, 'print_page.html', context2) 
         
         return render(request, 'data_visualization.html', context2)
         
     return render(request, 'data_visualization.html', context1)
 
+@login_required(login_url="login")
+def print_page_view(request):
+
+    return render(request,'print_page.html')
 
 @login_required(login_url="login")
 def Workers_managment_view(request):
@@ -258,12 +429,17 @@ def delete_user(request, pk):
     # If the request method is not POST, return a simple response
     return HttpResponse("Method Not Allowed", status=405)
 
-
+@login_required(login_url="login")
+def validation_page(request):
+    validate = {'username':'admin2','file' : '', 'isvalid' :'notyet'}
+    context = {'validate':validate}
+    return render(request,'validation.html',context) 
 
 def Login_infra_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me')
         try :
             user = User.objects.get(username = username)
         except:
@@ -272,6 +448,8 @@ def Login_infra_view(request):
         user = authenticate(request,username=username,password=password)
         if user is not None :
             login(request,user)
+            if remember_me:  # Check if "Remember Me" is selected
+                request.session.set_expiry(60)  # Set session expiration to 2 weeks (in seconds )
             url = reverse('data_visualization')
 
             return redirect(url)
@@ -283,16 +461,21 @@ def Login_infra_view(request):
 @login_required(login_url="login")
 def Upload_view(request):
     if request.method == 'POST':
-        excel_file = request.FILES['excel_file']
-        media_directory = os.path.join(settings.MEDIA_ROOT, '')
-        if excel_file is not None:
-            # Store the selected file name in the session
-            request.session['selected_file_name'] = excel_file.name
+
+        try:
+            excel_file = request.FILES['excel_file']
+            if not excel_file.name.endswith('.xlsx'):
+                return render(request, 'Upload.html', messages.error(request, "Seuls les fichiers Excel sont autorisés !!"))
+            media_directory = os.path.join(settings.MEDIA_ROOT, '')
+            if excel_file is not None:
+                # Store the selected file name in the session
+                request.session['selected_file_name'] = excel_file.name
 
             fs = FileSystemStorage(location=media_directory)
             fs.save(excel_file.name, excel_file)
-
-        selected_sheet = request.POST.get('selected_sheet')  # Get the selected sheet name
+            selected_sheet = request.POST.get('selected_sheet')  # Get the selected sheet name
+        except MultiValueDictKeyError:
+            return render(request, 'Upload.html', messages.error(request, "le fichier Excel n'a pas été choisi !!"))
         
         # Check if the file name is stored in the session
         if 'selected_file_name' in request.session:
@@ -322,9 +505,11 @@ def Upload_view(request):
                 # Create an instance of the UploadedFile model
                 uploaded_file = UploadedFile(user=request.user, filename=excel_file_name)
                 uploaded_file.save()
+                messages.success(request, "Le fichier Excel ' " + processed_file_name + " ' a été ajouté avec succès")
                 fs.delete(excel_file_name)
             
             else:
+                
                 print("start_row is not None")
                 # Read the Excel file again, skipping rows before the start_row (including the start_row itself)
                 df = pd.read_excel(excel_file, sheet_name=selected_sheet, skiprows=start_row+1)
@@ -345,6 +530,7 @@ def Upload_view(request):
                 # Optionally, you can return the processed_file_path for further use
                 # Clear the stored file name from the session
                 del request.session['selected_file_name']
+                messages.success(request, "Le fichier Excel ' " + processed_file_name + " ' a été ajouté avec succès")
                 fs.delete(excel_file_name)
     return render(request,'Upload.html')
    

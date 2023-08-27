@@ -12,6 +12,14 @@ body {
   font-family: sans-serif;
   background-color: #eeeeee;
 }
+.messages .error {
+  color: red;
+  font-weight: bold;
+}
+.messages .success {
+  color: rgb(9, 184, 21);
+  font-weight: bold;
+}
 
 .file-upload {
   background-color: #ffffff;
@@ -188,7 +196,7 @@ body {
       </div>
     </div>
     <div class="file-upload-content">
-      <img class="file-upload-image" src="../static/images/excel_image.png" alt="Excel Icon" />
+      <img class="file-upload-image" src="" alt="Excel Icon" />
       <div class="image-title-wrap">
         <button type="button" onclick="removeUpload()" class="remove-image">Remove <span class="image-title">Uploaded Excel</span></button>
       </div>
@@ -214,6 +222,7 @@ function readFile(input) {
   const sheetSelect = document.getElementById('sheet-name');
   const imageUploadWrap = document.querySelector('.image-upload-wrap');
   const fileUploadContent = document.querySelector('.file-upload-content');
+  const fileUploadImage = document.querySelector('.file-upload-image');
   const imageTitle = document.querySelector('.image-title');
 
   // Clear the previous options
@@ -222,6 +231,7 @@ function readFile(input) {
   if (file) {
     if (file.type === "application/vnd.ms-excel" || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
       // Display Excel icon and hide the uploaded image
+      fileUploadImage.src = "../static/images/excel_image.png";
       imageUploadWrap.style.display = "none";
       fileUploadContent.style.display = "block";
       imageTitle.textContent = "Uploaded Excel: " + file.name;
@@ -244,8 +254,13 @@ function readFile(input) {
 
     }else {
       // File type is not Excel, show the uploaded image
-      readURL(input);
+      
+      fileUploadImage.src = "../static/images/unsupported.png";
       imageTitle.textContent = "Uploaded Image: " + file.name;
+      imageUploadWrap.style.display = "none";
+
+      // Display uploaded image and image title
+      fileUploadContent.style.display = "block";
     }
   }else {
     // No file selected, hide the uploaded image
