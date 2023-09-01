@@ -2,6 +2,10 @@ from django.conf import settings
 from django.urls import path
 from . import views
 from django.conf.urls.static import static
+from django.conf.urls import handler404, handler500
+
+
+
 urlpatterns = [
     
     path('', views.data_visualization_view, name='data_visualization'),
@@ -17,7 +21,9 @@ urlpatterns = [
     path('delete/<int:pk>/', views.delete_user, name='delete_user'),
     path('add_employee/', views.add_employee, name='add_employee'),
     path('validation/', views.validation_page, name='validation'),
-
+    path('error-500/', views.error_500, name='error_500'),
+    path('error-404/', views.error_404, name='error_404'),
+    path('download/', views.download_filtered_df_as_excel, name='download_filtered_df_as_excel'),
 
 ]
 

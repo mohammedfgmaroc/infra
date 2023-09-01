@@ -1,0 +1,16 @@
+{% block title %}
+    
+    
+
+{% endblock %}
+
+{% block content %}
+
+
+    <h1>An Error Occurred</h1>
+    <p>{{ error_message }}</p>
+
+    <!-- Provide a link or button to navigate back -->
+    <a href="{% url 'data_visualization' %}">Accueil</a>
+
+{% endblock %}

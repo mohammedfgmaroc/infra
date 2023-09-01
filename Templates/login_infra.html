@@ -17,15 +17,15 @@
 {% endif %}
       <form class="login-form" method="post" action="">
       {% csrf_token %}
-        <input type="text" placeholder="username" name="username"/>
-        <input type="password" placeholder="password" name="password"/>
+        <input type="text" placeholder="Nom d'utilisateur" name="username"/>
+        <input type="password" placeholder="Mot de passe" name="password"/>
         
         <div class="checkbox">
           <input type="checkbox" name="remember_me" />
           <label>Se souvenir de moi</label>
         </div>
         
-        <button>login</button>  
+        <button>Se connecter</button>  
       </form>
     </div>
   </div>

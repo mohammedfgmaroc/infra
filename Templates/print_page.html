@@ -31,11 +31,12 @@
         }
 
         .scroll-item {
-            display: inline-block; /* Display items in a row */
-            width: 300px; /* Set the width of each item */
-            height: auto;
-            background-color: #ddd;
-            margin: 10px; /* Add spacing between items */
+            height: 600px; /* Adjust the height as needed */
+            overflow-y: auto; /* Add vertical scrollbar when content exceeds the height */
+            max-width: 2000px;
+            border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+
+            
         }
 
         .vertical-container {
@@ -107,11 +108,24 @@
             }
         }
         
+        .button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center; /* Center icon vertically */
+            border-radius: 5px;
+        }
+        
         /* Add more styling as needed */
 
     </style>
     <div id="print-button-container" class="no-print">
         <button id="print-button"><i class="fas fa-print"> Imprimer</i></button>
+        <a href="{% url 'data_visualization' %}"><button class="button">Accueil</button></a>
     </div>
     <h1>Rapport d'un filtre appliqué sur le fichier : </br></br>" {{filename}} " par {{username}}</h1>
     <div class="horizontal-container">
@@ -172,8 +186,17 @@
                             <td>Bon</td>
                             <td>Moyen</td>
                             <td></td>
-                            <td>Movaise</td>
-                            <td>Très Movaise</td>
+                            <td>Mauvaise</td>
+                            <td>Très Mauvaise</td>
+                            <td></td>        
+                        </tr>
+                        <tr>
+                            <th scope="row">Couleur</th>
+                            <td>Bleu</td>
+                            <td>Vert</td>
+                            <td></td>
+                            <td>Jaune</td>
+                            <td>Rouge</td>
                             <td></td>        
                         </tr>
                     </tbody>

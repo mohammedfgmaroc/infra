@@ -6,7 +6,6 @@
 
 {% block content %}
     
-    
     <!-- Your Data Visualization content here -->
     <style>
 
@@ -23,8 +22,12 @@
             display: flex; /* Use flexbox to arrange containers horizontally */
             margin: 0 auto; /* Center the outer container horizontally */
             padding: 0px;
+            flex-direction: row;
+            flex-wrap: wrap;
+            
             
         }
+
         .messages .error {
             color: red;
             font-weight: bold;
@@ -35,7 +38,6 @@
         }
 
         .inner-container {
-            width: 100%;
             border: 1px solid #ffffff;
             margin: 10px;
             flex: 1; /* Distribute available space equally among the containers */
@@ -44,51 +46,38 @@
           font-family: Arial, sans-serif;
           background-color: #f7f7f7;
         }
-      
+        .scrollable-container {
+            height: 600px; /* Adjust the height as needed */
+            max-width: 650px;
+            overflow-y: auto; /* Add vertical scrollbar when content exceeds the height */
+            overflow-x: auto;
+            border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+        }
+        .horizontal-scroll-container {
+            height: 600px; /* Adjust the height as needed */
+            max-width: 1330px;
+            overflow-x: auto; /* Enable horizontal scrolling */
+            overflow-x: auto;
+            white-space: nowrap; /* Prevent wrapping of content */
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin: 10px;
+            position: relative;
+        }
         .container {
-          width: 800px;
           margin: 0 auto;
-          width: 100%; /* Use a percentage for flexibility */
           padding: 20px;
+          width: 100%;
           background-color: #ffffff;
           border-radius: 10px;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
           position: relative;
           
         }
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .container1 .scrollable-container {
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .outer-container{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .scrollable-container{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .inner-header-container{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .form-row{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .col-md-6{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .bg-light .p-3{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .costum{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-            .table .custom-table{
-                padding: 10px; /* Adjust padding for smaller screens */
-            }
-
-        }
+        
+        
         
       
         .form-row {
@@ -239,6 +228,7 @@
             width: 90%;
             border: 1px solid #000000;
             
+            
         }
 
         .costum th{
@@ -246,6 +236,9 @@
             padding: 8px;
             text-align: center;
             color: #000000;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         } 
         .costum td {
             border: 2px solid #000000;
@@ -286,11 +279,8 @@
         #form1 {
             width: 600px;
         }
-        .scrollable-container {
-            height: 600px; /* Adjust the height as needed */
-            overflow-y: auto; /* Add vertical scrollbar when content exceeds the height */
-            border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
-        }
+        
+        
         button[name="print_button"] {
             background-color: #007bff;
             color: #fff;
@@ -308,9 +298,49 @@
         button[name="print_button"] .fas {
             margin-right: 8px; /* Add space between icon and text */
         }
-
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(39, 39, 39, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Make sure it's above other elements */
+        }
+        .loading-spinner {
+            border: 10px solid rgba(0, 0, 0, 0.3);
+            border-top: 10px solid #ffffff;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: white;
+            margin-top: 10px;
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        h2{
+            margin-left: 100px;
+            margin-top: 30px; /* Marge supérieure */
+            margin-bottom: 20px; /* Marge inférieure */
+        }
+        .download-form {
+            display: flex;
+            align-items: center;
+        }
       </style>
-
+    
     <div class="outer-headercontainer">
         <div class="inner-header-container">
             <form id="form1" method="get" enctype="multipart/form-data">
@@ -318,7 +348,7 @@
                 <div class="form-row">
                     <div class="form-col">
                         <label for="year">Séléctionnez un fichier</label>
-                        <input type="text" id="file" name="selected_filename" list="files" class="input-text" placeholder="Noms des Fichiers" value="{{ filename }}">
+                        <input type="text" id="file" name="selected_filename" list="files" class="input-text" placeholder="Noms des Fichiers">
                         <datalist id="files">
                             {% for file in files %}
                                 <option value="{{ file }}">
@@ -344,15 +374,16 @@
     <div class="outer-container">
                
         <div class="inner-container">
+            <h2>Filtre</h2>
         <!-- Content for the second container -->
             <div class="container scrollable-container">
-
+                
                 <form id="form2" method="get" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="form-col">
-                            <label for="road-select">Choisissez la province:</label>
-                            <input type="text" id="province-select" name="province" list="provinces" class="input-text" placeholder="Nom de la province">
+                            <label for="province-select">Choisissez la DPETL:</label>
+                            <input type="text" id="province-select" name="province" list="provinces" class="input-text" placeholder="DPETL">
                             <datalist id="provinces">
                                 {% for province in provinces %}
                                     <option value="{{ province }}">
@@ -398,6 +429,7 @@
             </div>
         </div>
         <div class="inner-container">
+            <h2>Diagramme circulaire</h2>
             <!-- Content for the third container -->
             <div class="container scrollable-container">
                 
@@ -412,9 +444,10 @@
     <div class="outer-container">
 
         <div class="inner-container">
+            <h2>Disposition de données concernant la route</h2>
             <!-- Content for the first container -->
                 <div class="container scrollable-container">
-                    <h2>Grouped Historical Data</h2>
+                    
                     <table class="costum">
                         <thead>
                             <tr>
@@ -427,7 +460,11 @@
                         <tbody>
                             {% for group in grouped_historical_data %}
                             <tr>
+                                {% if group.hist != group.hist %}
+                                    <td></td>
+                                {% else %}
                                 <td>{{ group.hist }}</td>
+                                {% endif %}
                                 <td>{{ group.revet }}</td>
                                 <td>{{ group.first_pkd }}</td>
                                 <td>{{ group.last_pkf }}</td>
@@ -439,8 +476,10 @@
         </div>
 
             <div class="inner-container">
+                <h2>Statistiques sur le fichier filtré</h2>
                 <!-- Content for the first container -->
                     <div class="container scrollable-container">
+                        
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="bg-light p-3">
@@ -473,8 +512,8 @@
                                                 <td>Bon</td>
                                                 <td>Moyen</td>
                                                 <td></td>
-                                                <td>Movaise</td>
-                                                <td>Très Movaise</td>
+                                                <td>Mauvaise</td>
+                                                <td>Très Mauvaise</td>
                                                 <td></td>        
                                             </tr>
                                         </tbody>
@@ -527,16 +566,93 @@
     </div>
     <div class="outer-container">
 
-        <div class="inner-container">
+        
+            <h2> Fichier filtré</h2>
             <!-- Content for the first container -->
-                <div class="container scrollable-container">
+                <div class="horizontal-scroll-container">
+                    
+                    <table  class="costum">
+                        <thead>
+                            <tr>
+                                <th>DRETL</th>
+                                <th>DPETL</th>
+                                <th>Categorie</th>
+                                <th>Num_Route</th>
+                                <th>pkd</th>
+                                <th>pkf</th>
+                                <th>voie (sens voie express)</th>
+                                <th>long rv</th>
+                                <th>longueur</th>
+                                <th>HIST</th>
+                                <th>TRAF_CLS</th>
+                                <th>TMJA</th>
+                                <th>CAT_TMJA</th>
+                                <th>Larg_CH</th>
+                                <th>Larg_ACD</th>
+                                <th>Larg_ACG</th>
+                                <th>NDP</th>
+                                <th>ARR</th>
+                                <th>FIS</th>
+                                <th>DEF</th>
+                                <th>Cls_NdP</th>
+                                <th>Cls_Arr</th>
+                                <th>Cls_Fis</th>
+                                <th>Cls_Def</th>
+                                <th>DAC</th> 
+                                <th>{{ iac_column_name }}</th>
+                                <th>{{ isu_column_name }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in filtered_df.iterrows %}
+                                <tr>
+                                    <td>{{ row.DRETL }}</td>
+                                    <td>{{ row.DPETL }}</td>
+                                    <td>{{ row.Categorie }}</td>
+                                    <td>{{ row.Num_Route }}</td>
+                                    <td>{{ row.pkd }}</td>
+                                    <td>{{ row.pkf }}</td>
+                                    <td>{{ row.sens_voie }}</td>
+                                    <td>{{ row.long_rv }}</td>
+                                    <td>{{ row.longueur }}</td>
+                                    <td>{{ row.HIST }}</td>
+                                    <td>{{ row.TRAF_CLS }}</td>
+                                    <td>{{ row.TMJA }}</td>
+                                    <td>{{ row.CAT_TMJA }}</td>
+                                    <td>{{ row.Larg_CH }}</td>
+                                    <td>{{ row.Larg_ACD }}</td>
+                                    <td>{{ row.Larg_ACG }}</td>
+                                    <td>{{ row.NDP }}</td>
+                                    <td>{{ row.ARR }}</td>
+                                    <td>{{ row.FIS }}</td>
+                                    <td>{{ row.DEF }}</td>
+                                    <td>{{ row.Cls_NdP }}</td>
+                                    <td>{{ row.Cls_Arr }}</td>
+                                    <td>{{ row.Cls_Fis }}</td>
+                                    <td>{{ row.Cls_Def }}</td>
+                                    <td>{{ row.DAC }}</td>
+                                    <td>{{ row.IAC }}</td>
+                                    <td>{{ row.ISU }}</td>
+                                    
+                                </tr>
+                            {% endfor %}    
+                        </tbody>
+                    </table>
                     
                 </div> 
-        </div>
+                {% if filename and filtre1 %}
+                    <form method="get" action="{% url 'download_filtered_df_as_excel' %}" class="download-form" id="download-form">
+                        <input type="text" id="filename1" name="filename1" placeholder="Nom du fichier à télécharger" required>
+                        <button type="submit" class="btn btn-primary">Télécharger</button>
+                    </form>
+                {% endif %}
+    </div>
 
-        <div class="inner-container">
+        <div class="outer-container">
+            <h2>Échelle de kilométrage par catégorie ISU {{year}}</h2>
                 <!-- Content for the first container -->
-                    <div class="container scrollable-container">
+                    <div class="horizontal-scroll-container">
+                        
                         {% if bar_plot_svg %}
                             {{ bar_plot_svg|safe }}
                         {% else %}
@@ -546,6 +662,10 @@
                     </div> 
         </div>
 
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Chargement en cours...</p>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -572,12 +692,18 @@
             });
 
             function trySubmitForm() {
-                if (provinceChanged && roadChanged && categoryChanged) {
+                if (provinceChanged || ( roadChanged && categoryChanged)) {
                     // Submit the form when all elements have been changed
                     document.getElementById("form2").submit();
+                    document.getElementById('loadingOverlay').style.display = 'flex';
                 }
             }
         });
+        document.getElementById('form1').addEventListener('submit', function () {
+            // Show the loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        });
+        
 
     </script>
 

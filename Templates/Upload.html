@@ -176,8 +176,40 @@ body {
   cursor: pointer;
 }
 .custom-form input[type="submit"]:hover {
-  background-color: #0056b3;
+  background-color: rgb(0, 86, 179);
 }
+/* Loading overlay styles */
+.loading-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(68, 68, 68, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Make sure it's above other elements */
+}
+.loading-spinner {
+    border: 10px solid rgba(0, 0, 0, 0.3);
+    border-top: 10px solid #ffffff;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 2s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.loading-text {
+    color: white;
+    margin-top: 10px;
+    margin-left: 10px;
+    font-weight: bold;
+    font-size: 20px;
+  }
 
 </style>
 
@@ -187,12 +219,12 @@ body {
 <form id="upload-form" method="post" enctype="multipart/form-data" action="{% url 'Upload' %}">
   {% csrf_token %}
   <div class="file-upload">
-    <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger('click')">Add Excel</button>
+    <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger('click')">Ajouter un fichier Excel</button>
 
     <div class="image-upload-wrap">
       <input class="file-upload-input" type="file" name="excel_file" onchange="readFile(this);" accept=".xls, .xlsx" />
       <div class="drag-text">
-        <h3>Drag and drop a file or select add excel file</h3>
+        <h3>Faites glisser et déposez un fichier ou sélectionnez<br> Ajouter un fichier Excel</h3>
       </div>
     </div>
     <div class="file-upload-content">
@@ -207,15 +239,18 @@ body {
     <div class="select-sheet">
       <label for="sheet-name"></label>
       <select id="sheet-name" name="selected_sheet">
-        <option value="" disabled selected>Select a sheet</option>
+        <option value="" disabled selected>Sélectionnez une feuille Excel</option>
         <!-- Options for sheet names will be dynamically added here -->
       </select>
     </div>
-    <input type="submit" value="Submit">
+    <input type="submit" value="Charger">
   </div>
   
 </form>
-
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <p class="loading-text">Chargement en cours...</p>
+</div>
 <script>
 function readFile(input) {
   const file = input.files[0];
@@ -296,6 +331,10 @@ function removeUpload() {
   imageUploadWrap.style.display = "block";
   imageTitle.textContent = "";
 }
+document.getElementById('upload-form').addEventListener('submit', function () {
+    // Show the loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+});
 </script>
 
 {% endblock %}
